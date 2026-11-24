@@ -92,11 +92,14 @@ async def show_stats(message: types.Message):
     total = cursor.fetchone()[0]
     await message.answer(f"📈 Всего опубликовано прогнозов: {total}")
 
+from aiogram.utils.backoff import BackoffConfig
+
 async def main():
-    # Отключаем запрос getMe, который блокируется на общем IP
-    bot_id = int(TG_TOKEN.split(":")[0])
+    bot_id = int(TG_TOKEN.split(":"))
     bot._me = User(id=bot_id, is_bot=True, first_name="ValueDetector", username="bot")
-    await dp.start_polling(bot)
+    # Настраиваем паузу в 40 секунд при лимитах Telegram, чтобы таймер успевал обнулиться
+    backoff = BackoffConfig(min_delay=40.0, max_delay=60.0, factor=1.2, jitter=0.1)
+    await dp.start_polling(bot, backoff_config=backoff)
 
 if __name__ == "__main__":
     asyncio.run(main())
