@@ -94,7 +94,7 @@ async def show_stats(message: types.Message):
 
 async def main():
     # Отключаем запрос getMe, который блокируется на общем IP
-    bot_id = int(TG_TOKEN.split(":"))
+    bot_id = int(TG_TOKEN.split(":")[0])
     bot._me = User(id=bot_id, is_bot=True, first_name="ValueDetector", username="bot")
     await dp.start_polling(bot)
 
