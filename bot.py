@@ -4,18 +4,22 @@ import os
 import sqlite3
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, User
 
 logging.basicConfig(level=logging.INFO)
 
-# Токен и ID подтянутся автоматически из настроек хостинга
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
+BOT_TOKEN = os.getenv("9203209067:AAH1vmLcl0vBNdDHN4oos5cI6QubH8PM4QM")
+ADMIN_ID = int(os.getenv("252380544", "0"))
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-conn = sqlite3.connect("bot_data.db")
+# Сохраняем базу данных в постоянную папку хостинга /app/data
+data_dir = os.getenv("DATA_DIR", ".")
+os.makedirs(data_dir, exist_ok=True)
+db_path = os.path.join(data_dir, "bot_data.db")
+
+conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 cursor.execute("CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY)")
 cursor.execute("""
@@ -85,11 +89,13 @@ async def show_last_forecast(message: types.Message):
 @dp.message(F.text == "📊 Статистика")
 async def show_stats(message: types.Message):
     cursor.execute("SELECT COUNT(*) FROM forecasts")
-    total = cursor.fetchone()
+    total = cursor.fetchone()[0]
     await message.answer(f"📈 Всего опубликовано прогнозов: {total}")
 
 async def main():
-    await asyncio.sleep(25)  # Ждём 25 секунд при старте, чтобы сбросить старый лимит
+    # Отключаем запрос getMe, который блокируется на общем IP
+    bot_id = int(BOT_TOKEN.split(":")[0])
+    bot._me = User(id=bot_id, is_bot=True, first_name="ValueDetector", username="bot")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
