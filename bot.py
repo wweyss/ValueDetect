@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 TG_TOKEN = os.getenv("9203209067:AAH1vmLcl0vBNdDHN4oos5cI6QubH8PM4QM")
 ADMIN_ID = int(os.getenv("252380544", "0"))
 
-bot = Bot(token=BOT_TOKEN)
+bot = Bot(token=TG_TOKEN)
 dp = Dispatcher()
 
 # Сохраняем базу данных в постоянную папку хостинга /app/data
