@@ -8,7 +8,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, User
 
 logging.basicConfig(level=logging.INFO)
 
-TG_TOKEN = "9203209067:AAH1vmLcl0vBNdDHN4oos5cI6QubH8PM4QM"
+TG_TOKEN = "9203209067:AAHyqOIKyQm3KLtyyiBwizlxnsU_O3qNKdg"
 ADMIN_ID = 252380544
 
 bot = Bot(token=TG_TOKEN)
