@@ -96,7 +96,7 @@ async def show_stats(message: types.Message):
 from aiogram.utils.backoff import BackoffConfig
 
 async def main():
-    bot_id = int(TG_TOKEN.split(":"))
+    bot_id = 9203209067
     bot._me = User(id=bot_id, is_bot=True, first_name="ValueDetector", username="bot")
     # Настраиваем паузу в 40 секунд при лимитах Telegram, чтобы таймер успевал обнулиться
     backoff = BackoffConfig(min_delay=40.0, max_delay=60.0, factor=1.2, jitter=0.1)
