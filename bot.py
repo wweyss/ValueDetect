@@ -89,7 +89,7 @@ async def show_stats(message: types.Message):
     await message.answer(f"📈 Всего опубликовано прогнозов: {total}")
 
 async def main():
-    await bot.delete_webhook(drop_pending_updates=True)
+    await asyncio.sleep(25)  # Ждём 25 секунд при старте, чтобы сбросить старый лимит
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
