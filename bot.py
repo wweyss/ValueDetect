@@ -87,11 +87,74 @@ async def show_last_forecast(message: types.Message):
     else:
         await message.answer("Прогнозов пока нет.")
 
+# --- ЗАКРЫТИЕ ПРОГНОЗОВ (ДЛЯ АДМИНА) ---
+async def update_last_forecast_status(message: types.Message, new_status: str):
+    if message.from_user.id != ADMIN_ID:
+        await message.answer("У вас нет прав для изменения статуса прогнозов.")
+        return
+
+    cursor.execute("SELECT id, text, status FROM forecasts ORDER BY id DESC LIMIT 1")
+    row = cursor.fetchone()
+
+    if not row:
+        await message.answer("В базе пока нет ни одного прогноза.")
+        return
+
+    forecast_id, text, old_status = row
+    cursor.execute("UPDATE forecasts SET status = ? WHERE id = ?", (new_status, forecast_id))
+    conn.commit()
+
+    await message.answer(
+        f"Статус последнего прогноза (#{forecast_id}) обновлён!\n\n"
+        f"📝 {text}\n"
+        f"Было: {old_status} ➡️ Стало: **{new_status}**",
+        parse_mode="Markdown"
+    )
+
+@dp.message(Command("win"))
+async def cmd_win(message: types.Message):
+    await update_last_forecast_status(message, "✅ Выигрыш")
+
+@dp.message(Command("lose"))
+async def cmd_lose(message: types.Message):
+    await update_last_forecast_status(message, "❌ Проигрыш")
+
+@dp.message(Command("refund"))
+async def cmd_refund(message: types.Message):
+    await update_last_forecast_status(message, "🔄 Возврат")
+
+
+# --- ОБНОВЛЁННАЯ СТАТИСТИКА ---
 @dp.message(F.text == "📊 Статистика")
 async def show_stats(message: types.Message):
     cursor.execute("SELECT COUNT(*) FROM forecasts")
     total = cursor.fetchone()[0]
-    await message.answer(f"📈 Всего опубликовано прогнозов: {total}")
+
+    cursor.execute("SELECT COUNT(*) FROM forecasts WHERE status = '✅ Выигрыш'")
+    wins = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM forecasts WHERE status = '❌ Проигрыш'")
+    losses = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM forecasts WHERE status = '🔄 Возврат'")
+    refunds = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM forecasts WHERE status = 'ожидает'")
+    pending = cursor.fetchone()[0]
+
+    settled = wins + losses
+    win_rate = round((wins / settled) * 100, 1) if settled > 0 else 0.0
+
+    stats_text = (
+        f"📊 **Статистика прогнозов:**\n\n"
+        f"📌 Всего опубликовано: **{total}**\n"
+        f"✅ Выигрышей: **{wins}**\n"
+        f"❌ Проигрышей: **{losses}**\n"
+        f"🔄 Возвратов: **{refunds}**\n"
+        f"⏳ Ожидают расчёта: **{pending}**\n\n"
+        f"📈 Проходимость: **{win_rate}%**"
+    )
+    await message.answer(stats_text, parse_mode="Markdown")
 
 from aiogram.utils.backoff import BackoffConfig
 
